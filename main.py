@@ -67,19 +67,19 @@ def plot_comparison(spectrum1, spectrum2, name1, name2, type_of_interest):
     # normalize both values to sum to 1
     joined['value_' + name1] = joined['value_' + name1]/joined['value_' + name1].sum()
     joined['value_' + name2] = joined['value_' + name2]/joined['value_' + name2].sum()
-    st.write(spectrum1)
-    st.write(spectrum2)
+    #st.write(spectrum1)
+    #st.write(spectrum2)
  
     
     plt.scatter(joined['value_' + name1], joined['value_' + name2])
     plt.xlabel(name1)
     plt.ylabel(name2)
     plt.title(type_of_interest)
-    st.pyplot()
+    #st.pyplot()
 
     # calculate cosine similarity
     cosine_similarity = joined['value_' + name1].dot(joined['value_' + name2]) / (joined['value_' + name1].pow(2).sum() * joined['value_' + name2].pow(2).sum())**0.5
-    st.write('Cosine similarity: ', cosine_similarity)
+    #st.write('Cosine similarity: ', cosine_similarity)
     return cosine_similarity
 
 
@@ -97,11 +97,14 @@ def compare_and_report(mutation_info, spectra_data, comparison_list, spectra_lis
 
     ratio = cos_sim_ratios[0] / cos_sim_ratios[1]
 
-    st.write(f"Ratio of cosine similarities for {mutation_name}: ", ratio)
-    
+    st.write(f"Ratio of cosine similarities (MOV/BA.1) for {mutation_name}: ", ratio)
+    return ratio
+
 # Streamlit app
 def main():
-    st.title("Mutation Analysis")
+    st.title("Analysis of branch mutation spectra for MOV signature")
+    # window title
+    
 
     # input mutation data
     mutation_data = st.text_input("Enter mutations (comma-separated, e.g. 'G123A,T5343A'): ", "G123A,T5343A")
@@ -118,6 +121,9 @@ def main():
         context = get_context(genome_seq, mutation)
         mutation_info[mutation] = {'context': context, 'type': get_mut_type(mutation)}
         
+    # make a bar chart of mutation_types
+    counts_types = Counter([mutation_info[mutation]['type'] for mutation in mutations])
+    st.bar_chart(pd.DataFrame.from_dict(counts_types, orient='index'))
     
     genome_counts = count_all_trinucleotide_contexts(genome_seq)
     # make df
@@ -132,8 +138,8 @@ def main():
     st.write(mutation_info)
     # get spectra data
     spectra_data = get_spectra_data(spectra)
-    st.write(spectra_data['BA.1'])
-    st.write(spectra_data['High G-to-A'])
+    #st.write(spectra_data['BA.1'])
+    #st.write(spectra_data['High G-to-A'])
 
 
 
@@ -142,10 +148,16 @@ def main():
     spectra_list = ['High G-to-A', 'BA.1']
 
     # Make comparisons
-    compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'G>A')
-    compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'C>T')
-    compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'A>G')
-    compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'T>C')
+    ga = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'G>A')
+    ct = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'C>T')
+    ag = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'A>G')
+    tc = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'T>C')
+    # calculate mean weighted by number of mutations of each class in counts_types
+    mean = (ga*counts_types['G>A'] + ct*counts_types['C>T'] + ag*counts_types['A>G'] + tc*counts_types['T>C'])/sum(counts_types.values())
+    st.write(f"Weighted mean ratio of cosine similarities (MOV/BA.1) for all mutations: ", mean)
+
+
+
 
 
   
