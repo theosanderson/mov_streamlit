@@ -153,7 +153,7 @@ def main():
     ag = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'A>G')
     tc = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'T>C')
     # calculate mean weighted by number of mutations of each class in counts_types
-    mean = (ga*counts_types['G>A'] + ct*counts_types['C>T'] + ag*counts_types['A>G'] + tc*counts_types['T>C'])/sum(counts_types.values())
+    mean = ( ga*counts_types['G>A'] if ga else 0 + ct*counts_types['C>T'] if ct else 0 + ag*counts_types['A>G'] if ag else 0 + tc*counts_types['T>C'] if tc else 0)/(counts_types['G>A'] + counts_types['C>T'] + counts_types['A>G'] + counts_types['T>C'])
     st.write(f"Weighted mean ratio of cosine similarities (MOV/BA.1) for all mutations: ", mean)
 
 
