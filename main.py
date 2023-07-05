@@ -4,6 +4,7 @@ from Bio import Entrez, SeqIO
 from collections import Counter
 import pandas as pd
 from matplotlib import pyplot as plt
+import numpy as np
 
 spectra = [
     {"name":"BA.1",
@@ -107,7 +108,7 @@ def main():
     
 
     # input mutation data
-    mutation_data = st.text_input("Enter mutations (comma-separated, e.g. 'G123A,T5343A') or ('nt:G123A,nt:T2323A'): ", "G123A,T5343A")
+    mutation_data = st.text_input("Enter mutations (comma-separated, e.g. 'G123A,T5343A'): ", "G123A,T5343A")
     mutation_data = mutation_data.replace("nt:","")
     mutation_data = mutation_data.replace(" ","")
     mutations = mutation_data.split(',')
@@ -153,8 +154,16 @@ def main():
     ag = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'A>G')
     tc = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'T>C')
     # calculate mean weighted by number of mutations of each class in counts_types
-    mean = ( ga*counts_types['G>A'] if ga else 0 + ct*counts_types['C>T'] if ct else 0 + ag*counts_types['A>G'] if ag else 0 + tc*counts_types['T>C'] if tc else 0)/(counts_types['G>A'] + counts_types['C>T'] + counts_types['A>G'] + counts_types['T>C'])
-    st.write(f"Weighted mean ratio of cosine similarities (MOV/BA.1) for all mutations: ", mean)
+    # account for the fact that any of these could be nan, in which case it is excluded
+    def weighted_mean(values, weights):
+        # exclude any nan values
+        values = np.ma.masked_invalid(values)
+        #raise ValueError(values, weights)
+        return np.ma.average(values, weights=weights)
+    mean = weighted_mean([ga, ct, ag, tc], [counts_types['G>A'], counts_types['C>T'], counts_types['A>G'], counts_types['T>C']])
+    st.write(f"Mean ratio of cosine similarities (MOV/BA.1) for all mutations: ", mean)
+    
+
 
 
 
