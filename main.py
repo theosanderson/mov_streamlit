@@ -107,7 +107,7 @@ def main():
     
 
     # input mutation data
-    mutation_data = st.text_input("Enter mutations (comma-separated, e.g. 'G123A,T5343A'): ", "G123A,T5343A")
+    mutation_data = st.text_input("Enter mutations (comma-separated, e.g. 'G123A,T5343A') or ('nt:G123A,nt:T2323A'): ", "G123A,T5343A")
     mutation_data = mutation_data.replace("nt:","")
     mutation_data = mutation_data.replace(" ","")
     mutations = mutation_data.split(',')
