@@ -161,7 +161,7 @@ def main():
         #raise ValueError(values, weights)
         return np.ma.average(values, weights=weights)
     mean = weighted_mean([ga, ct, ag, tc], [counts_types['G>A'], counts_types['C>T'], counts_types['A>G'], counts_types['T>C']])
-    st.write(f"Mean ratio of cosine similarities (MOV/BA.1) for all mutations: ", mean)
+    st.write(f"Weighted mean ratio (MOV/BA.1): ", mean)
     
 
 
