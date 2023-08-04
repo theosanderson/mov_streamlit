@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from scipy.stats import multinomial
 import numpy as np
+st.set_page_config(page_title="MOV mutations analysis", page_icon="🧬", layout="wide")
 
 spectra = [
     {"name":"BA.1",
@@ -122,6 +123,10 @@ def compare_and_report(mutation_info, spectra_data, comparison_list, spectra_lis
 # Streamlit app
 def main():
     st.title("Analysis of branch mutation spectra for MOV signature")
+    # window title
+ 
+    
+                        
     # window title
     
 
