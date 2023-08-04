@@ -8,6 +8,7 @@ import numpy as np
 from scipy.stats import multinomial
 import numpy as np
 
+
 spectra = [
     {"name":"BA.1",
      "url": "https://raw.githubusercontent.com/theosanderson/molnupiravir/main/mutational_spectra/BA.1_SBS_spectrum_Ruis.csv"
