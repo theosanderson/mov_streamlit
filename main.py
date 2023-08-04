@@ -5,6 +5,8 @@ from collections import Counter
 import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
+from scipy.stats import multinomial
+import numpy as np
 
 spectra = [
     {"name":"BA.1",
@@ -62,9 +64,17 @@ def plot_comparison(spectrum1, spectrum2, name1, name2, type_of_interest):
     # we want to filter to the type of interest, then plot.
     spectrum1 = spectrum1[spectrum1['type'] == type_of_interest]
     spectrum2 = spectrum2[spectrum2['type'] == type_of_interest]
+    starting_nuc = type_of_interest[0] 
+    # if either spectrum is empty, return NaN
+    if len(spectrum1) == 0 or len(spectrum2) == 0:
+        return np.nan
+    # filter so context[1] is the starting nucleotide
+    spectrum1 = spectrum1[spectrum1['context'].apply(lambda x: x[1] == starting_nuc)]
+    spectrum2 = spectrum2[spectrum2['context'].apply(lambda x: x[1] == starting_nuc)]
     # We should join and assume any missing values are 0, then plot a scatter plot of each "value" col
     joined = spectrum1.merge(spectrum2, on='context', how='outer', suffixes=('_' + name1, '_' + name2))
     joined = joined.fillna(0)
+    #st.write(joined)
     # normalize both values to sum to 1
     joined['value_' + name1] = joined['value_' + name1]/joined['value_' + name1].sum()
     joined['value_' + name2] = joined['value_' + name2]/joined['value_' + name2].sum()
@@ -77,11 +87,18 @@ def plot_comparison(spectrum1, spectrum2, name1, name2, type_of_interest):
     plt.ylabel(name2)
     plt.title(type_of_interest)
     #st.pyplot()
+       
+            
+#   calculate multinomial log likelihood
+    counts = joined['counts'].values
+  
+    p = (joined['Number_of_mutations']/joined['Number_of_mutations'].sum() ).values
+  
+    log_likelihood =float(multinomial.logpmf(counts, n=np.sum(counts), p=p))
 
-    # calculate cosine similarity
-    cosine_similarity = joined['value_' + name1].dot(joined['value_' + name2]) / (joined['value_' + name1].pow(2).sum() * joined['value_' + name2].pow(2).sum())**0.5
-    #st.write('Cosine similarity: ', cosine_similarity)
-    return cosine_similarity
+    #st.write('Log likelihood: ', log_likelihood)
+                                        
+    return log_likelihood
 
 
 
@@ -89,17 +106,18 @@ def plot_comparison(spectrum1, spectrum2, name1, name2, type_of_interest):
 def compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, mutation_name):
     # Ensure both lists have the same length
     assert len(comparison_list) == len(spectra_list)
-
-    cos_sim_ratios = []
+   
+    log_liks = []
 
     for i in range(len(comparison_list)):
         comp = plot_comparison(mutation_info, spectra_data[spectra_list[i]], 'My muts', spectra_list[i], mutation_name)
-        cos_sim_ratios.append(comp)
+        log_liks.append(comp)
 
-    ratio = cos_sim_ratios[0] / cos_sim_ratios[1]
+    # calculate the log likelihood ratio
+    log_lik_ratio = log_liks[0] - log_liks[1]
+    st.write('Log likelihood increment towards MOV for ', mutation_name, ': ', log_lik_ratio)
 
-    st.write(f"Ratio of cosine similarities (MOV/BA.1) for {mutation_name}: ", ratio)
-    return ratio
+    return log_lik_ratio
 
 # Streamlit app
 def main():
@@ -155,16 +173,20 @@ def main():
     tc = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'T>C')
     # calculate mean weighted by number of mutations of each class in counts_types
     # account for the fact that any of these could be nan, in which case it is excluded
-    def weighted_mean(values, weights):
-        # exclude any nan values
-        values = np.ma.masked_invalid(values)
-        #raise ValueError(values, weights)
-        return np.ma.average(values, weights=weights)
-    mean = weighted_mean([ga, ct, ag, tc], [counts_types['G>A'], counts_types['C>T'], counts_types['A>G'], counts_types['T>C']])
-    st.write(f"Weighted mean ratio (MOV/BA.1): ", mean)
     
+    summed = np.nansum([ga, ct, ag, tc])
 
+    st.write('Summed log likelihood ratio: ', summed)
+    st.write('High values indicate MOV-like contexts, low values indicate non-MOV-like contexts')
+    # calculate probability of MOV-like contexts
+    prob = 1/(1+np.exp(-summed))
+    st.write('Estimated un-normalised probability of MOV-like contexts: ', prob)
+    st.write("The probability above does not account for the fact that the prior for MOV is low, and therefore in some sense may be overestimated. On the other hand, the sequence only looks at contexts and not at mutation types, and so if the sequence was identified on the basis of a high G-to-A signature and so the prior is already high, the probability may not be underestimated.")
 
+    # in red, add a disclaimer
+    st.write("""Disclaimer: Do not rely primarily on this application for interpreting molnupiravir\'s role 
+             in a spectific sequence. This application should only be used by experts who can interpret the
+                results in the context of other evidence. """)
 
 
 
