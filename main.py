@@ -201,7 +201,7 @@ def main():
     st.write('**Estimated un-normalised probability of MOV-like contexts:** ', np.round(prob, 3))
     # horizontal rule
     st.markdown('<hr>', unsafe_allow_html=True)
-    st.write("The probability above does not account for the fact that the prior for MOV is low, and therefore in some sense may be overestimated. On the other hand, the sequence only looks at contexts and not at mutation types, and so if the sequence was identified on the basis of a high G-to-A signature and so the prior is already high, the probability may not be underestimated.")
+    st.write("The probability above does not account for the fact that the prior for MOV is low, and therefore in some sense may be overestimated. On the other hand, the analysis only looks at contexts and not at mutation types, and so if the sequence was identified on the basis of a high G-to-A signature and so the prior is already high, the probability may not be underestimated.")
 
     # in red, add a disclaimer
     st.write("""*Disclaimer: Do not rely primarily on this application for interpreting molnupiravir\'s role 
