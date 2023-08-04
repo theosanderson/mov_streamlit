@@ -204,9 +204,9 @@ def main():
     st.write("The probability above does not account for the fact that the prior for MOV is low, and therefore in some sense may be overestimated. On the other hand, the sequence only looks at contexts and not at mutation types, and so if the sequence was identified on the basis of a high G-to-A signature and so the prior is already high, the probability may not be underestimated.")
 
     # in red, add a disclaimer
-    st.write("""Disclaimer: Do not rely primarily on this application for interpreting molnupiravir\'s role 
-             in a spectific sequence. This application should only be used by experts who can interpret the
-                results in the context of other evidence. """)
+    st.write("""*Disclaimer: Do not rely primarily on this application for interpreting molnupiravir\'s role 
+             in a specific sequence. This application should only be used by experts who can interpret the
+                results in the context of other evidence.*""")
     
     st.markdown('<hr>', unsafe_allow_html=True)
     st.write(mutation_info)
