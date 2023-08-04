@@ -8,7 +8,6 @@ import numpy as np
 from scipy.stats import multinomial
 import numpy as np
 
-
 spectra = [
     {"name":"BA.1",
      "url": "https://raw.githubusercontent.com/theosanderson/molnupiravir/main/mutational_spectra/BA.1_SBS_spectrum_Ruis.csv"
@@ -116,7 +115,7 @@ def compare_and_report(mutation_info, spectra_data, comparison_list, spectra_lis
 
     # calculate the log likelihood ratio
     log_lik_ratio = log_liks[0] - log_liks[1]
-    st.write('Log likelihood increment towards MOV for ', mutation_name, ': ', log_lik_ratio)
+    st.write('Log likelihood increment towards MOV for ', mutation_name, ': ', np.round(log_lik_ratio, 2))
 
     return log_lik_ratio
 
@@ -143,7 +142,16 @@ def main():
         
     # make a bar chart of mutation_types
     counts_types = Counter([mutation_info[mutation]['type'] for mutation in mutations])
+
+    # hr 
+    st.markdown("***")
+    st.subheader("Illustration of mutation types")
+
+
     st.bar_chart(pd.DataFrame.from_dict(counts_types, orient='index'))
+    st.markdown("***")
+    st.subheader("Assessment of MOV-likeness of mutation context")
+    st.markdown("*This section is wholly separate from the mutation classes, and considers only the contexts in which transition mutations occur.*")
     
     genome_counts = count_all_trinucleotide_contexts(genome_seq)
     # make df
@@ -155,7 +163,7 @@ def main():
     # normalize to genome_counts
     mutation_info['value'] = mutation_info.apply(lambda x: x['counts']/genome_counts[x['context']], axis=1)
 
-    st.write(mutation_info)
+   
     # get spectra data
     spectra_data = get_spectra_data(spectra)
     #st.write(spectra_data['BA.1'])
@@ -177,17 +185,23 @@ def main():
     
     summed = np.nansum([ga, ct, ag, tc])
 
-    st.write('Summed log likelihood ratio: ', summed)
-    st.write('High values indicate MOV-like contexts, low values indicate non-MOV-like contexts')
+    st.write('Summed log likelihood ratio: ', np.round(summed, 3))
+
     # calculate probability of MOV-like contexts
     prob = 1/(1+np.exp(-summed))
-    st.write('Estimated un-normalised probability of MOV-like contexts: ', prob)
+    # below should be bold
+    st.write('**Estimated un-normalised probability of MOV-like contexts:** ', np.round(prob, 3))
+    # horizontal rule
+    st.markdown('<hr>', unsafe_allow_html=True)
     st.write("The probability above does not account for the fact that the prior for MOV is low, and therefore in some sense may be overestimated. On the other hand, the sequence only looks at contexts and not at mutation types, and so if the sequence was identified on the basis of a high G-to-A signature and so the prior is already high, the probability may not be underestimated.")
 
     # in red, add a disclaimer
     st.write("""Disclaimer: Do not rely primarily on this application for interpreting molnupiravir\'s role 
              in a spectific sequence. This application should only be used by experts who can interpret the
                 results in the context of other evidence. """)
+    
+    st.markdown('<hr>', unsafe_allow_html=True)
+    st.write(mutation_info)
 
 
 
