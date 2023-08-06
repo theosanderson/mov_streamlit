@@ -180,9 +180,13 @@ def main():
     comparison_list = ['High G-to-A', 'BA.1']
     spectra_list = ['High G-to-A', 'BA.1']
     # count transition muts
+    # Filter the mutation_info DataFrame for transition mutations
     transition_muts = mutation_info[mutation_info['type'].isin(['G>A', 'C>T', 'A>G', 'T>C'])]
-    st.write("You entered ", len(transition_muts), " transition mutations. ", "**This may be too few too have any confidence in the results.**" if len(transition_muts) < 5 else "")
     
+    # Sum the 'counts' column of the filtered DataFrame to get the total count of transition mutations
+    total_transition_muts = transition_muts['counts'].sum()
+    
+    st.write("You entered ", total_transition_muts, " transition mutations. ", "**This may be too few too have any confidence in the results.**" if total_transition_muts < 5 else "")
     # Make comparisons
     ga = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'G>A')
     ct = compare_and_report(mutation_info, spectra_data, comparison_list, spectra_list, 'C>T')
