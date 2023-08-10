@@ -45,7 +45,7 @@ def normalize_data(mutation_data):
     return mutation_data
 
 # function to download and parse spectra data
-def get_spectra_data(spectra_urls):
+def get_spectra_data(spectra_urls, genome_counts):
     spectra_data = {}
     for spectrum in spectra_urls:
         df = pd.read_csv(spectrum["url"])
@@ -54,12 +54,20 @@ def get_spectra_data(spectra_urls):
         # we get context from 1st, 3rd and 5th letters
         df['context'] = df['Substitution'].apply(lambda x: x[0] + x[2] + x[6])
         df['value'] = df['Number_of_mutations']
+    
+       
+        # here basically undo the normalization that is put into SBS spectra
+        df['value'] = df['value'] * df['context'].apply(lambda x: genome_counts[x])
+
+       
         spectra_data[spectrum['name']] = df
 
     return spectra_data
 
 def get_mut_type(mut_string):
     return mut_string[0] + '>' + mut_string[-1]
+
+
 
 def plot_comparison(spectrum1, spectrum2, name1, name2, type_of_interest):
     # we want to filter to the type of interest, then plot.
@@ -75,25 +83,14 @@ def plot_comparison(spectrum1, spectrum2, name1, name2, type_of_interest):
     # We should join and assume any missing values are 0, then plot a scatter plot of each "value" col
     joined = spectrum1.merge(spectrum2, on='context', how='outer', suffixes=('_' + name1, '_' + name2))
     joined = joined.fillna(0)
-    #st.write(joined)
-    # normalize both values to sum to 1
-    joined['value_' + name1] = joined['value_' + name1]/joined['value_' + name1].sum()
-    joined['value_' + name2] = joined['value_' + name2]/joined['value_' + name2].sum()
-    #st.write(spectrum1)
-    #st.write(spectrum2)
- 
+  
     
-    plt.scatter(joined['value_' + name1], joined['value_' + name2])
-    plt.xlabel(name1)
-    plt.ylabel(name2)
-    plt.title(type_of_interest)
-    #st.pyplot()
        
             
 #   calculate multinomial log likelihood
     counts = joined['counts'].values
   
-    p = (joined['Number_of_mutations']/joined['Number_of_mutations'].sum() ).values
+    p = (joined['value']/joined['value'].sum() ).values
   
     log_likelihood =float(multinomial.logpmf(counts, n=np.sum(counts), p=p))
 
@@ -159,22 +156,18 @@ def main():
     st.markdown("*This section is wholly separate from the mutation classes, and considers only the contexts in which transition mutations occur.*")
     
     genome_counts = count_all_trinucleotide_contexts(genome_seq)
+  
+
     # make df
     mutation_info = pd.DataFrame.from_dict(mutation_info, orient='index')
     
     # sum by context and type
     mutation_info = mutation_info.groupby(['context','type']).size().reset_index(name='counts')
 
-    # normalize to genome_counts
-    mutation_info['value'] = mutation_info.apply(lambda x: x['counts']/genome_counts[x['context']], axis=1)
-
    
     # get spectra data
-    spectra_data = get_spectra_data(spectra)
-    #st.write(spectra_data['BA.1'])
-    #st.write(spectra_data['High G-to-A'])
-
-
+    spectra_data = get_spectra_data(spectra, genome_counts)
+   
 
     # Define the list of comparisons and spectra to use
     comparison_list = ['High G-to-A', 'BA.1']
