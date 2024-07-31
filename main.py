@@ -9,6 +9,8 @@ from scipy.stats import multinomial
 import numpy as np
 st.set_page_config(page_title="MOV mutations analysis", page_icon="🧬", layout="wide")
 
+
+
 spectra = [
     {"name":"BA.1",
      "url": "https://raw.githubusercontent.com/theosanderson/molnupiravir/main/mutational_spectra/BA.1_SBS_spectrum_Ruis.csv"
@@ -119,6 +121,7 @@ def compare_and_report(mutation_info, spectra_data, comparison_list, spectra_lis
 
 def main():
     st.title("Analysis of branch mutation spectra for MOV signature")
+    
 
     # Get query parameters from URL
     query_params = st.experimental_get_query_params()
@@ -208,6 +211,8 @@ def main():
     st.write("""*Disclaimer: Do not rely primarily on this application for interpreting molnupiravir\'s role 
              in a specific sequence. This application should only be used by experts who can interpret the
                 results in the context of other evidence.*""")
+    
+    st.markdown("**You can also try [SMDP, an alternative tool for COVID mutation distributions](https://eringill.shinyapps.io/covid_mutation_distributions/) which analyses more sources of mutations (but using a different, non-contextual approach).**")
     
     st.markdown('<hr>', unsafe_allow_html=True)
     st.write(mutation_info)
