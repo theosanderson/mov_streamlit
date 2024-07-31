@@ -117,7 +117,7 @@ def compare_and_report(mutation_info, spectra_data, comparison_list, spectra_lis
 
     return log_lik_ratio
 
-# Streamlit appdef main():
+def main():
     st.title("Analysis of branch mutation spectra for MOV signature")
 
     # Get query parameters from URL
