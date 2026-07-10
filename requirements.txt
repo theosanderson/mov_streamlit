@@ -1,3 +1,6 @@
+streamlit==1.59.1
 biopython
 matplotlib
+numpy
+pandas
 scipy
