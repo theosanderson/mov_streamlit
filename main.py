@@ -124,11 +124,11 @@ def main():
     
 
     # Get query parameters from URL
-    query_params = st.experimental_get_query_params()
+    query_params = st.query_params
     
     # Check if 'mutations' parameter exists in the URL
     if 'mutations' in query_params:
-        mutation_data = query_params['mutations'][0]
+        mutation_data = query_params['mutations']
     else:
         mutation_data = ""
 
